@@ -1,48 +1,109 @@
 module Points
 
-# Следющие имена должны быть публичными:
-# Point, neighbors, Circle, Square, center
+using LinearAlgebra
 
-"""
-    Point(x, y)
+export Point, Circle, Square, center, neighbors
 
-Точка на декартовой плоскости.
-"""
-Point
+struct Point
+	x
+	y
+end
 
-"""
-    center(points) -> Point
+struct Circle
+	o::Point
+	radius
+end
 
-Центр "масс" точек.
-"""
-center(points)
+struct Square
+	o::Point
+	side
+end
 
-"""
-    neighbors(points, origin, k) -> Vector{Point}
 
-Поиск ближайших `k` соседей точки `origin` среди точек `points`.
-"""
-neighbors(points, origin, k)
+function Base.:+(fi::Point, se::Point)
+	return Point(fi.x + se.x, fi.y + se.y)
+end
 
-"""
-    Circle(o::Point, radius)
+function Base.:-(fi::Point, se::Point)
+	return Point(fi.x - se.x, fi.y - se.y)
+end
 
-Круг с центром `o` и радиусом `radius`.
-"""
-Circle
+function Base.:-(p::Point)
+	return Point(-p.x,-p.y)
+end
 
-"""
-    Square(o::Point, side)
+function Base.:*(num::Real, p::Point)
+	return Point(p.x * num, p.y * num)
+end
 
-Квадрат с центром в `o` и стороной `side`. Стороны квадрата параллельны осям координат.
-"""
-Square
+function Base.:*(p::Point, num::Real)
+	return Point(p.x * num, p.y * num)
+end
 
-"""
-    center(points, area) -> Point
+function Base.:/(p::Point, num::Real)
+	return Point(p.x / num, p.y / num)
+end
 
-Центр масс точек `points`, принадлежащих области `area` (`Circle` или `Square`).
-"""
-center(points, area)
+function LinearAlgebra.norm(p::Point)
+	return sqrt(p.x^2 + p.y^2)
+end
+
+function LinearAlgebra.dot(fi::Point, se::Point)
+	return (fi.x*se.x + fi.y*se.y)
+end
+
+function Base.in(p::Point, area::Circle)
+	return (norm(p - area.o) <= area.radius)
+end
+
+
+function Base.in(p::Point, area::Square)
+	return (abs(p.x-area.o.x) <= area.side/2 && abs(p.y-area.o.y) <= area.side/2)
+end
+
+
+
+function center(points)
+	sum_x = 0
+	sum_y = 0
+	for i in 1:length(points)
+		sum_x = sum_x + points[i].x
+		sum_y = sum_y + points[i].y
+	end
+	return Point(sum_x/length(points), sum_y/length(points))
+end
+
+function neighbors(points, origin::Point, k::Int)
+	points_vec = Point[]
+	for i in 1:length(points)
+		push!(points_vec, points[i])
+	end
+	if length(points_vec) <= k
+		return setdiff(points_vec, [origin])
+	elseif k <= 0
+		return Point[]
+	else		
+		for i in 1:length(points_vec)
+			points_vec[i] = points_vec[i] - origin
+		end		
+		norms = map(norm, points_vec)
+		normperm = sortperm(norms)
+		result = points[normperm]
+		for i in 1:length(points)
+			result[i] = result[i] + origin
+		end 
+		return setdiff(result, [origin])[1:k]
+	end
+end
+
+function center(points, area)
+	in_points = Point[]
+	for i in 1:length(points)
+		if (points[i] in area)
+			push!(in_points, points[i])
+		end
+	end
+	return center(in_points)
+end
 
 end # module
