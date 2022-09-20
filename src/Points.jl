@@ -61,19 +61,19 @@ function Base.in(p::Point, area::Square)
 	return (abs(p.x-area.o.x) <= area.side/2 && abs(p.y-area.o.y) <= area.side/2)
 end
 
-#закомменченный метод выводил ошибку  тесте 23
+#закомменчен 2 вариант реализации
 
-#function center(points)
-#	sum_x = 0
-#	sum_y = 0
-#	for i in 1:length(points)
-#		sum_x = sum_x + points[i].x
-#		sum_y = sum_y + points[i].y
-#	end
-#	return Point(sum_x/length(points), sum_y/length(points))
-#end
+function center(points)
+	sum_x = 0
+	sum_y = 0
+	for p in points
+		sum_x = sum_x + p.x
+		sum_y = sum_y + p.y
+	end
+	return Point(sum_x/length(points), sum_y/length(points))
+end
 
-center(points) = sum(points)/length(points)
+#center(points) = sum(points)/length(points)
 
 function neighbors(points, origin::Point, k::Int)
 	points_vec = Point[]
